@@ -1,0 +1,37 @@
+using Entities.Models;
+using System.Collections.Generic;
+using Repositories;
+using System.Threading.Tasks;
+using System;
+
+namespace Tests
+{
+    public class MockPortraitRepository: IPortraitRepository
+    {
+        private readonly List<Portrait> _portraits;
+
+        public MockPortraitRepository() {
+            _portraits = new List<Portrait>()
+            {
+                new Portrait() { Id = new Guid("ab2bd817-98cd-4cf3-a80a-53ea0cd9c200"),
+                    Title = "Orange Juice", Description="Orange Tree", URL = "" },
+                new Portrait() { Id = new Guid("815accac-fd5b-478a-a9d6-f171a2f6ae7f"),
+                    Title = "Diary Milk", Description="Cow", URL = "4.00M" },
+                new Portrait() { Id = new Guid("33704c4a-5b87-464c-bfb6-51971b4d18ad"),
+                    Title = "Frozen Pizza", URL="Uncle Mickey", URL = "12.00M" }
+            };
+        }
+
+        public async Task<IEnumerable<Portrait>> GetAllPortraitsAsync() {
+            return _portraits;
+        }
+        public async Task<Portrait> GetPortraitByIdAsync( Guid portraitId ) {}
+            /** Non-Async methods **/
+        public async IEnumerable<Portrait> GetAllPortraits() {}
+        public async Portrait GetPortraitById(Guid portraitId) {}
+            /** CRUD - Async non-necessary **/
+        void CreatePortrait(Portrait portrait) {}
+        void UpdatePortrait(Portrait portrait) {}
+        void DeletePortrait(Portrait portrait) {}
+    }
+}

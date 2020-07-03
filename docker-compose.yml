@@ -1,0 +1,52 @@
+version: "3.0"
+
+services:
+  mssql:
+    container_name: mssql
+    image: microsoft/mssql-server-linux:latest
+    ports:
+        - 1439:1433
+    environment: 
+        - SA_PASSWORD=MyPass@word
+        - ACCEPT_EULA=Y
+    volumes: 
+        - ./mssql/mangoscript.sql:/scripts/mangoscript.sql
+    command: 
+        - /bin/bash
+        - -c
+        - |
+            /opt/mssql/bin/sqlservr &
+            sleep 30
+            /opt/mssql-tools/bin/sqlcmd -U sa -P $$SA_PASSWORD -l 30 -e -i /scripts/mangoscript.sql
+            sleep infinity
+
+  dotnet:
+    container_name: dotnet
+    depends_on: 
+        - mssql
+    image: ionsurf/mangochallenge-dotnet:runtime
+    ports:
+      - 5001:5000
+  
+  reactjs:
+    container_name: reactjs
+    depends_on: 
+      - mssql
+      - dotnet
+    image: ionsurf/mangochallenge-reactjs:dev
+    build: 
+      context: ./reactjs
+      dockerfile: Dockerfile
+    volumes: 
+      - './reactjs/:/app'
+      - '/app/node_modules'
+    ports: 
+      - 3000:3000
+    environment: 
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=production
+    #tty: true
+    stdin_open: true
+
+volumes:
+    dbdata:

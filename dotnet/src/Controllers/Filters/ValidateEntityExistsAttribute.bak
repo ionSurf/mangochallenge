@@ -1,0 +1,52 @@
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Entities.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Repositories;
+using Microsoft.EntityFrameworkCore;
+
+namespace Filters.ActionFilters
+{
+    public class ValidateEntityExistsAttribute<T> : IActionFilter where T: class, IEntity
+    {
+        private readonly RepositoryBase<T> _context;
+ 
+        public ValidateEntityExistsAttribute(RepositoryBase<T> context)
+        {
+            _context = context;
+        }
+ 
+        public void OnActionExecuting(ActionExecutingContext context)
+        {
+            Guid id = Guid.Empty;
+ 
+            if (context.ActionArguments.ContainsKey("id"))
+            {
+                id = (Guid)context.ActionArguments["id"];
+            }
+            else
+            {
+                context.Result = new BadRequestObjectResult("Bad id parameter");
+                return;
+            }
+
+            var entity = _context.FindByCondition( e => e.Id.Equals( id ) ).FirstOrDefaultAsync();
+
+            if(entity == null)
+            {
+                context.Result = new NotFoundResult();
+            }
+            else
+            {
+                context.HttpContext.Items.Add("entity", entity);
+            }
+        }
+ 
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
+        }
+    }
+}
